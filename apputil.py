@@ -15,22 +15,35 @@ class Genius:
 
     def get_artist(self, search_term):
         search_url = f"{self.base_url}/search"
-        params = {"q": search_term, "access_token": self.access_token}
-        r = requests.get(search_url, params=params)
+        params = {"q": search_term, "access_token": self.access_token}    # Define query parameters (search term and access token)
+        r = requests.get(search_url, params=params)    # Make a GET request to the Genius search endpoint
         r.raise_for_status()
+
+        # Extract the list of search results ("hits")
         hits = r.json()["response"]["hits"]
+
+        # If no results found, return None
         if not hits:
             return None
         artist_id = hits[0]["result"]["primary_artist"]["id"]
+
+        # Construct the artist details endpoint URL
         artist_url = f"{self.base_url}/artists/{artist_id}"
+
+        # Request detailed artist information
         r2 = requests.get(artist_url, params={"access_token": self.access_token})
         r2.raise_for_status()
+        
+        # Return the artist data as a dictionary
         return r2.json()["response"]["artist"]
 
     def get_artists(self, search_terms):
         rows = []
         for term in search_terms:
+            # Fetch artist information for each term
             artist = self.get_artist(term)
+
+           # If artist found, add their info to the results list
             if artist:
                 rows.append({
                     "search_term": term,
@@ -38,6 +51,7 @@ class Genius:
                     "artist_id": artist.get("id"),
                     "followers_count": artist.get("followers_count")
                 })
+            # If no artist found, add placeholders    
             else:
                 rows.append({
                     "search_term": term,
@@ -45,4 +59,5 @@ class Genius:
                     "artist_id": None,
                     "followers_count": None
                 })
+         # Convert the list of dictionaries into a pandas DataFrame       
         return pd.DataFrame(rows)
