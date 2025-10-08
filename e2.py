@@ -5,4 +5,4 @@ import json
 g = Genius()  # loads token from .env
 print("Exercise 2...\n")
 artist = g.get_artist("Radiohead")
-print(artist)
+print(json.dumps(artist))
